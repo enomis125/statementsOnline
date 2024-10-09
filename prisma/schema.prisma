@@ -7,12 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Users {
-  UserID           Int       @id(map: "PK__Users__1788CCAC117E4C7A") @default(autoincrement())
-  FirstName        String    @db.NVarChar(100)
-  SecondName       String    @db.NVarChar(100)
-  Email            String    @unique(map: "UQ__Users__A9D1053459291FCD") @db.NVarChar(255)
-  Password         String    @db.NVarChar(255)
-  ConnectionString String?   @db.NVarChar(255)
-  CreatedAt        DateTime? @default(now(), map: "DF__Users__CreatedAt__403A8C7D") @db.DateTime
+model users {
+  userID           Int       @id(map: "PK__users__CB9A1CDF03B1C371") @default(autoincrement())
+  firstName        String    @db.NVarChar(100)
+  secondName       String    @db.NVarChar(100)
+  email            String    @unique(map: "UQ__users__AB6E616490B11E80") @db.NVarChar(255)
+  password         String    @db.NVarChar(255)
+  connectionString String?   @db.NVarChar(255)
+  createdAt        DateTime? @default(now(), map: "DF__users__createdAt__38996AB5") @db.DateTime
 }
