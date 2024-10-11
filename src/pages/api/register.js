@@ -2,9 +2,18 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
+const API_KEY =
+  process.env.API_KEY || "vn2or398yvuh39fv9yf32faso987f987oihsao8789780hvw08f"; // Chave da API
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
+    // Verificar a API Key
+    const apiKey = req.headers["x-api-key"]; // Esperamos a chave no cabeçalho 'x-api-key'
+
+    if (!apiKey || apiKey !== API_KEY) {
+      return res.status(403).json({ message: "Invalid API key" });
+    }
+
     try {
       const { firstName, secondName, email, password } = req.body;
 
@@ -14,8 +23,7 @@ export default async function handler(req, res) {
 
       // Verificando a existência do usuário
       const userExists = await prisma.users.findUnique({
-        // Alterado de prisma.user para prisma.users
-        where: { Email: email }, // Alterado de email para Email
+        where: { Email: email },
       });
 
       if (userExists) {
@@ -27,18 +35,17 @@ export default async function handler(req, res) {
 
       // Criando o usuário
       await prisma.users.create({
-        // Alterado de prisma.user para prisma.users
         data: {
-          FirstName: firstName, // Alterado de firstName para FirstName
-          SecondName: secondName, // Alterado de secondName para SecondName
-          Email: email, // Alterado de email para Email
-          Password: hashedPassword, // Alterado de password para Password
+          FirstName: firstName,
+          SecondName: secondName,
+          Email: email,
+          Password: hashedPassword,
         },
       });
 
       return res.status(201).json({ message: "User registered successfully." });
     } catch (error) {
-      console.error("Database error:", error); // Log detalhado do erro
+      console.error("Database error:", error);
       return res
         .status(500)
         .json({ message: "Database error", error: error.message });
