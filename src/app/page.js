@@ -1,302 +1,111 @@
-"use client";
-import { useEffect, useState } from "react";
+'use client';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const Page = () => {
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false); // Estado para controle de carregamento
+  const [getJsons, setGetJsons] = useState([]); // Estado para armazenar os dados da API
+  const [filter, setFilter] = useState('pendentes'); // Estado para gerenciar o filtro
 
-  const fetchData = async () => {
+  // Função para buscar os dados da API
+  const getDataJsons = async () => {
     try {
-      const response = await fetch("/api/submitReservation", {
-        method: "GET", // Mudamos para 'GET' para buscar os dados
-      });
-      if (!response.ok) {
-        throw new Error("Erro ao carregar os dados");
-      }
-      const result = await response.json();
-      setData(result.data); // Armazena apenas os dados
-    } catch (err) {
-      console.error(err);
-      setError(err.message);
+      const response = await axios.get("/api/get_jsons");
+      setGetJsons(response.data.response); // Aqui você salva os dados da API
+    } catch (error) {
+      console.error("Erro ao buscar os dados da API", error);
     }
   };
 
+  // Usando useEffect para buscar os dados ao montar o componente
   useEffect(() => {
-    fetchData(); // Carrega os dados ao montar a página
+    getDataJsons(); // Chama a função uma vez ao montar
+
+    // Define o intervalo para atualizar a lista a cada 5 segundos
+    const interval = setInterval(getDataJsons, 5000);
+
+    // Limpa o intervalo ao desmontar o componente
+    return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchData(); // Atualiza os dados a cada 5 segundos
-    }, 5000); // 5000 milissegundos = 5 segundos
+  // Filtra os dados com base no filtro selecionado
+  const filteredJsons = getJsons.filter(json =>
+    filter === 'vistos' ? json.seen : !json.seen
+  );
 
-    return () => clearInterval(interval); // Limpa o intervalo ao desmontar
-  }, []);
+  // Função para marcar como "seen" e abrir a nova página
+  const handleCardClick = async (json) => {
+    try {
+      // Chama a API PATCH para atualizar o campo `seen`
+      await axios.patch(`/api/get_jsons/${json.requestID}`);
 
-  useEffect(() => {
-    if (data) {
-      console.log("Dados carregados:", data);
+      // Armazena apenas o ID no localStorage
+      localStorage.setItem('recordID', json.requestID);
+
+      // Navega para a nova página
+      window.location.href = '/homepages/jsonView';
+    } catch (error) {
+      console.error('Erro ao marcar como visto:', error);
     }
-  }, [data]);
+  };
 
   return (
-    <div className="flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-gray-200 p-4 shadow-md">
-        <h2 className="text-xl font-bold mb-4">Menu</h2>
-        <ul>
-          <li className="mb-2">
-            <a href="#" className="text-blue-600 hover:underline">
-              Pendentes
-            </a>
-          </li>
-          <li className="mb-2">
-            <a href="#" className="text-blue-600 hover:underline">
-              Vistos
-            </a>
-          </li>
-        </ul>
-      </aside>
+    <div className="flex p-6">
+      {/* Sidebar com os botões de filtro */}
+      <div className="w-1/6 mr-4">
+  <button
+    className={`block w-full h-[15%] mb-2 p-5 text-left font-bold rounded-lg ${filter === 'pendentes' ? 'text-white' : 'bg-white border'}`}
+    style={{
+      backgroundColor: filter === 'pendentes' ? '#003366' : '',
+      borderColor: filter !== 'pendentes' ? 'lighgray' : '', // Aplica a borda ao botão não pressionado
+      borderWidth: filter !== 'pendentes' ? '2px' : '0px' // Ajusta a espessura da borda
+    }}
+    onClick={() => setFilter('pendentes')}
+  >
+    Pendentes
+  </button>
 
-      {/* Conteúdo Principal */}
-      <main className="flex-1 p-4 font-sans">
-        <h1 className="text-2xl font-bold text-gray-800">Reservas</h1>
-
-        {data &&
-        data.Reservation.length === 0 &&
-        data.GuestInfo.length === 0 ? (
-          <p className="text-gray-500">Nenhum dado disponível.</p>
-        ) : (
-          <>
-            <h2 className="text-xl mt-4">Dados Recebidos:</h2>
-
-            <div className="flex gap-4 mb-4">
-              {/* Caixinha de Reservas */}
-              <div className="flex-1 border border-gray-300 p-4 rounded-md shadow">
-                <h3 className="font-semibold text-lg">Reservas:</h3>
-                {data &&
-                  data.Reservation.map((reservation, index) => (
-                    <div
-                      key={index}
-                      className="border border-gray-300 p-2 mb-2 rounded-md"
-                    >
-                      <p>
-                        <strong>Número da Reserva:</strong>{" "}
+  <button
+    className={`block w-full h-[15%] mb-2 p-5 text-left font-bold rounded-lg ${filter === 'vistos' ? 'text-white' : 'bg-white border'}`}
+    style={{
+      backgroundColor: filter === 'vistos' ? '#003366' : '',
+      borderColor: filter !== 'vistos' ? 'lighgray' : '',
+      borderWidth: filter !== 'vistos' ? '2px' : '0px'
+    }}
+    onClick={() => setFilter('vistos')}
+  >
+    Vistos
+  </button>
+</div>
+      {/* Conteúdo principal com os registros de reservas */}
+      <div className="w-5/6">
+        {/* <h1 className="text-2xl font-bold mb-6">Lista de Reservas</h1> */}
+        {/* Exibe os registros de reservas filtrados e ordenados do mais recente para o mais antigo */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"> {/* Ajustando a grade para ser responsiva */}
+          {filteredJsons.length > 0 ? (
+            filteredJsons
+              .sort((a, b) => new Date(b.requestDateTime) - new Date(a.requestDateTime)) // Ordena do mais recente para o mais antigo
+              .map((json, index) => {
+                const reservation = JSON.parse(json.requestBody).Reservation[0]; // Pega a primeira reserva de cada `requestBody`
+                return (
+                  <div
+                    key={index}
+                    className="bg-white p-4 rounded-lg shadow-md flex items-center justify-center cursor-pointer h-48" // Altura fixa para manter os cards quadrados
+                    onClick={() => handleCardClick(json)} // Chama a função ao clicar no card
+                  >
+                    <div className="flex flex-col justify-center text-center">
+                      <p className="text-sm text-gray-500 mb-2">Reservation Number</p>
+                      <p className="text-3xl text-gray-600 font-semibold">
                         {reservation.ReservationNumber}
                       </p>
-                      <p>
-                        <strong>Número da Reserva de Booking:</strong>{" "}
-                        {reservation.BookingNumber}
-                      </p>
-                      <p>
-                        <strong>Data de Check-In:</strong> {reservation.DateCI}
-                      </p>
-                      <p>
-                        <strong>Data de Check-Out:</strong> {reservation.DateCO}
-                      </p>
-                      <p>
-                        <strong>Número do Quarto:</strong>{" "}
-                        {reservation.RoomNumber}
-                      </p>
-                      <p>
-                        <strong>Nome do Usuário:</strong> {reservation.UserName}
-                      </p>
                     </div>
-                  ))}
-
-                {/* Se não houver reservas, exibe tabela vazia */}
-                {data && data.Reservation.length === 0 && (
-                  <div className="border border-gray-300 p-2 mb-2 rounded-md">
-                    <p className="text-gray-500">Nenhuma reserva encontrada.</p>
                   </div>
-                )}
-              </div>
-
-              {/* Caixinha de Informações do Hóspede */}
-              <div className="flex-1 border border-gray-300 p-4 rounded-md shadow">
-                <h3 className="font-semibold text-lg">
-                  Informações do Hóspede:
-                </h3>
-                {data &&
-                  data.GuestInfo.map((guest, index) => (
-                    <div
-                      key={index}
-                      className="border border-gray-300 p-2 mb-2 rounded-md"
-                    >
-                      <p>
-                        <strong>Saudação:</strong> {guest.Salution}
-                      </p>
-                      <p>
-                        <strong>Nome:</strong> {guest.FirstName}
-                      </p>
-                      <p>
-                        <strong>Sobrenome:</strong> {guest.LastName}
-                      </p>
-                      <p>
-                        <strong>NIF:</strong> {guest.VatNo}
-                      </p>
-                      <p>
-                        <strong>País:</strong> {guest.Country}
-                      </p>
-                      <p>
-                        <strong>Endereço:</strong> {guest.Street}
-                      </p>
-                      <p>
-                        <strong>Código Postal:</strong> {guest.PostalCode}
-                      </p>
-                      <p>
-                        <strong>Cidade:</strong> {guest.City}
-                      </p>
-                    </div>
-                  ))}
-
-                {/* Se não houver hóspedes, exibe tabela vazia */}
-                {data && data.GuestInfo.length === 0 && (
-                  <div className="border border-gray-300 p-2 mb-2 rounded-md">
-                    <p className="text-gray-500">Nenhum hóspede encontrado.</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <h3 className="font-semibold text-lg">Itens:</h3>
-              <table className="min-w-full border-collapse border border-gray-300 mb-4">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border border-gray-300 p-2">Descrição</th>
-                    <th className="border border-gray-300 p-2">Quantidade</th>
-                    <th className="border border-gray-300 p-2">
-                      Preço Unitário
-                    </th>
-                    <th className="border border-gray-300 p-2">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data && data.Items && data.Items.length === 0 ? ( // Verificação adicional para evitar erro
-                    <tr>
-                      <td colSpan="4" className="text-center p-2 text-gray-500">
-                        Nenhum item disponível.
-                      </td>
-                    </tr>
-                  ) : (
-                    data &&
-                    data.Items.map(
-                      (
-                        item // Acesso seguro a data.Items
-                      ) => (
-                        <tr key={item.ID}>
-                          <td className="border border-gray-300 p-2">
-                            {item.Description}
-                          </td>
-                          <td className="border border-gray-300 p-2">
-                            {item.Qty}
-                          </td>
-                          <td className="border border-gray-300 p-2">
-                            €{item.UnitPrice.toFixed(2)}
-                          </td>
-                          <td className="border border-gray-300 p-2">
-                            €{item.Total.toFixed(2)}
-                          </td>
-                        </tr>
-                      )
-                    )
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="mb-4">
-              <h3 className="font-semibold text-lg">Impostos:</h3>
-              <table className="min-w-full border-collapse border border-gray-300 mb-4">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border border-gray-300 p-2">
-                      Tipo de Imposto
-                    </th>
-                    <th className="border border-gray-300 p-2">
-                      Total com Impostos
-                    </th>
-                    <th className="border border-gray-300 p-2">
-                      Total sem Impostos
-                    </th>
-                    <th className="border border-gray-300 p-2">
-                      Total de Impostos
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data && data.Taxes && data.Taxes.length === 0 ? ( // Verificação adicional para evitar erro
-                    <tr>
-                      <td colSpan="4" className="text-center p-2 text-gray-500">
-                        Nenhum imposto disponível.
-                      </td>
-                    </tr>
-                  ) : (
-                    data &&
-                    data.Taxes.map((tax) => (
-                      <tr key={tax.ID}>
-                        <td className="border border-gray-300 p-2">
-                          {tax.Taxes}%
-                        </td>
-                        <td className="border border-gray-300 p-2">
-                          €{tax.TotalWithTaxes.toFixed(2)}
-                        </td>
-                        <td className="border border-gray-300 p-2">
-                          €{tax.TotalWithOutTaxes.toFixed(2)}
-                        </td>
-                        <td className="border border-gray-300 p-2">
-                          €{tax.TotalTaxes.toFixed(2)}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="mb-4">
-              <h3 className="font-semibold text-lg">Totais do Documento:</h3>
-              <table className="min-w-full border-collapse border border-gray-300 mb-4">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border border-gray-300 p-2">Total</th>
-                    <th className="border border-gray-300 p-2">Saldo</th>
-                    <th className="border border-gray-300 p-2">Pagamento</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data &&
-                  data.DocumentTotals &&
-                  data.DocumentTotals.length === 0 ? ( // Verificação adicional para evitar erro
-                    <tr>
-                      <td colSpan="3" className="text-center p-2 text-gray-500">
-                        Nenhum total disponível.
-                      </td>
-                    </tr>
-                  ) : (
-                    data &&
-                    data.DocumentTotals.map((total) => (
-                      <tr key={total.Total}>
-                        <td className="border border-gray-300 p-2">
-                          €{total.Total.toFixed(2)}
-                        </td>
-                        <td className="border border-gray-300 p-2">
-                          €{total.Balance.toFixed(2)}
-                        </td>
-                        <td className="border border-gray-300 p-2">
-                          €{total.Payment.toFixed(2)}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
-      </main>
+                );
+              })
+          ) : (
+            <p className="text-gray-500">Nenhuma reserva disponível</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
