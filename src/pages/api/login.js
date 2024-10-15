@@ -16,7 +16,7 @@ export default async function handler(req, res) {
 
     // Verificando a existência do usuário
     const user = await prisma.users.findUnique({
-      where: { Email: email },
+      where: { email: email },
     });
 
     // Verificando a senha

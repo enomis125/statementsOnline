@@ -23,7 +23,7 @@ export default async function handler(req, res) {
 
       // Verificando a existência do usuário
       const userExists = await prisma.users.findUnique({
-        where: { Email: email },
+        where: { email: email },
       });
 
       if (userExists) {
@@ -36,10 +36,10 @@ export default async function handler(req, res) {
       // Criando o usuário
       await prisma.users.create({
         data: {
-          FirstName: firstName,
-          SecondName: secondName,
-          Email: email,
-          Password: hashedPassword,
+          firstName: firstName,
+          secondName: secondName,
+          email: email,
+          password: hashedPassword,
         },
       });
 
