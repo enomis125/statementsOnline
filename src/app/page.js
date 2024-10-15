@@ -53,7 +53,7 @@ const Page = () => {
       {/* Sidebar com os botões de filtro */}
       <div className="w-1/6 mr-4">
   <button
-    className={`block w-full h-[15%] mb-2 p-5 text-left font-bold rounded-lg ${filter === 'pendentes' ? 'text-white' : 'bg-white border'}`}
+    className={`block w-full h-[30%] mb-2 p-5 text-left font-bold rounded-lg ${filter === 'pendentes' ? 'text-white' : 'bg-white border'}`}
     style={{
       backgroundColor: filter === 'pendentes' ? '#003366' : '',
       borderColor: filter !== 'pendentes' ? 'lighgray' : '', // Aplica a borda ao botão não pressionado
@@ -65,7 +65,7 @@ const Page = () => {
   </button>
 
   <button
-    className={`block w-full h-[15%] mb-2 p-5 text-left font-bold rounded-lg ${filter === 'vistos' ? 'text-white' : 'bg-white border'}`}
+    className={`block w-full h-[30%] mb-2 p-5 text-left font-bold rounded-lg ${filter === 'vistos' ? 'text-white' : 'bg-white border'}`}
     style={{
       backgroundColor: filter === 'vistos' ? '#003366' : '',
       borderColor: filter !== 'vistos' ? 'lighgray' : '',
