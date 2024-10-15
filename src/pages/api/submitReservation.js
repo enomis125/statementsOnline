@@ -1,18 +1,22 @@
-// pages/api/submitReservation.js
+let reservationData; // Armazena os dados da reserva em memória
+
 export default function handler(req, res) {
-    // Verifica se a requisição é do tipo POST
-    if (req.method === 'POST') {
-      const reservationData = req.body; // Captura o JSON enviado
-  
-      // Aqui você pode processar os dados como quiser (armazenar no banco de dados, etc.)
-      console.log("Dados recebidos:", reservationData);
-  
-      // Retorna uma resposta de sucesso
-      res.status(200).json({ message: "Dados recebidos com sucesso", data: reservationData });
+  if (req.method === "POST") {
+    reservationData = req.body; // Armazena os dados recebidos na variável
+    console.log("Dados recebidos:", reservationData);
+
+    res
+      .status(200)
+      .json({ message: "Dados recebidos com sucesso", data: reservationData });
+  } else if (req.method === "GET") {
+    // Retorna os dados armazenados na variável de memória
+    if (reservationData) {
+      res.status(200).json({ data: reservationData });
     } else {
-      // Retorna erro 405 se o método não for permitido
-      res.setHeader('Allow', ['POST']);
-      res.status(405).end(`Method ${req.method} Not Allowed`);
+      res.status(404).json({ message: "Nenhum dado encontrado." });
     }
+  } else {
+    res.setHeader("Allow", ["POST", "GET"]);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
-  
+}
