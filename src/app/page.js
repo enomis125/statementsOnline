@@ -1,6 +1,8 @@
 'use client';
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { GrView } from "react-icons/gr";
+import { FiLogOut } from "react-icons/fi";
 
 const Page = () => {
   const [getJsons, setGetJsons] = useState([]); // Estado para armazenar os dados da API
@@ -33,70 +35,108 @@ const Page = () => {
   );
 
   // Função para marcar como "seen" e abrir a nova página
-  const handleCardClick = async (json) => {
-    try {
-      // Chama a API PATCH para atualizar o campo `seen`
-      await axios.patch(`/api/get_jsons/${json.requestID}`);
-
-      // Armazena apenas o ID no localStorage
-      localStorage.setItem('recordID', json.requestID);
-
-      // Navega para a nova página
-      window.location.href = '/homepages/jsonView';
-    } catch (error) {
-      console.error('Erro ao marcar como visto:', error);
-    }
+  const handleCardClick = (json) => {
+    localStorage.setItem('recordID', json.requestID);
+    window.location.href = '/homepages/jsonView';
   };
+  
 
   return (
-    <div className="flex p-6">
-      {/* Sidebar com os botões de filtro */}
-      <div className="w-1/6 mr-4">
-  <button
-    className={`block w-full h-[30%] mb-2 p-5 text-left font-bold rounded-lg ${filter === 'pendentes' ? 'text-white' : 'bg-white border'}`}
-    style={{
-      backgroundColor: filter === 'pendentes' ? '#003366' : '',
-      borderColor: filter !== 'pendentes' ? 'lighgray' : '', // Aplica a borda ao botão não pressionado
-      borderWidth: filter !== 'pendentes' ? '2px' : '0px' // Ajusta a espessura da borda
-    }}
-    onClick={() => setFilter('pendentes')}
-  >
-    Pendentes
-  </button>
+    <div className="min-h-screen flex w-full">
+      <div className="w-1/6 h-screen fixed bg-white shadow-md flex flex-col">
+        <div className="flex-1">
+          {/* Aqui você pode adicionar outros botões ou conteúdo no topo da sidebar */}
+        </div>
 
-  <button
-    className={`block w-full h-[30%] mb-2 p-5 text-left font-bold rounded-lg ${filter === 'vistos' ? 'text-white' : 'bg-white border'}`}
-    style={{
-      backgroundColor: filter === 'vistos' ? '#003366' : '',
-      borderColor: filter !== 'vistos' ? 'lighgray' : '',
-      borderWidth: filter !== 'vistos' ? '2px' : '0px'
-    }}
-    onClick={() => setFilter('vistos')}
-  >
-    Vistos
-  </button>
-</div>
+        {/* Botão de Logout na parte inferior */}
+        <button className="flex items-center gap-2 text-lg mb-4 pl-8">
+          <FiLogOut size={20} color="gray-900" /> Logout
+        </button>
+      </div>
+
       {/* Conteúdo principal com os registros de reservas */}
-      <div className="w-5/6">
-        {/* <h1 className="text-2xl font-bold mb-6">Lista de Reservas</h1> */}
+      <div className="flex-1 min-h-screen ml-[16%] p-8 overflow-y-auto" style={{ backgroundColor: '#F0F1EC' }}>
+
+        <h2 className="font-semibold text-2xl mb-4">Statements</h2>
+
+        <button
+          className={`mb-4 p-2 text-left font-bold rounded-lg ${filter === 'pendentes' ? 'text-white' : 'bg-white border'}`}
+          style={{
+            backgroundColor: filter === 'pendentes' ? '#2E615C' : '',
+            borderColor: filter !== 'pendentes' ? 'lightgray' : '', // Aplica a borda ao botão não pressionado
+            borderWidth: filter !== 'pendentes' ? '2px' : '0px' // Ajusta a espessura da borda
+          }}
+          onClick={() => setFilter('pendentes')}
+        >
+          Pendentes
+        </button>
+
+        <button
+          className={`mb-4 ml-4 p-2 text-left font-bold rounded-lg ${filter === 'vistos' ? 'text-white' : 'bg-white border'}`}
+          style={{
+            backgroundColor: filter === 'vistos' ? '#2E615C' : '',
+            borderColor: filter !== 'vistos' ? 'lightgray' : '',
+            borderWidth: filter !== 'vistos' ? '2px' : '0px'
+          }}
+          onClick={() => setFilter('vistos')}
+        >
+          Vistos
+        </button>
+
         {/* Exibe os registros de reservas filtrados e ordenados do mais recente para o mais antigo */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"> {/* Ajustando a grade para ser responsiva */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredJsons.length > 0 ? (
             filteredJsons
               .sort((a, b) => new Date(b.requestDateTime) - new Date(a.requestDateTime)) // Ordena do mais recente para o mais antigo
               .map((json, index) => {
                 const reservation = JSON.parse(json.requestBody).Reservation[0]; // Pega a primeira reserva de cada `requestBody`
+                const reservationtotal = JSON.parse(json.requestBody).DocumentTotals[0]; // Pega a primeira reserva de cada `requestBody`
+
                 return (
                   <div
                     key={index}
-                    className="bg-white p-4 rounded-lg shadow-md flex items-center justify-center cursor-pointer h-48" // Altura fixa para manter os cards quadrados
-                    onClick={() => handleCardClick(json)} // Chama a função ao clicar no card
+                    className="relative bg-white p-4 rounded-lg shadow-md flex items-center justify-center h-72"
                   >
-                    <div className="flex flex-col justify-center text-center">
-                      <p className="text-sm text-gray-500 mb-2">Reservation Number</p>
-                      <p className="text-3xl text-gray-600 font-semibold">
-                        {reservation.ReservationNumber}
+                    {/* Nome do hotel no canto superior esquerdo */}
+                    <div className="absolute top-0 left-0 bg-green-200 p-2 rounded-lg mt-2 ml-2">
+                      <p className="text-sm font-bold text-gray-700">Nome do Hotel</p>
+                    </div>
+
+                    {/* Conteúdo do card */}
+                    <div className="flex flex-col absolute top-14 left-4">
+                      <p className="text-sm text-gray-500">
+                        Reservation <span className="text-xl text-gray-900 font-semibold">{reservation.ReservationNumber}</span> / Room{" "}
+                        <span className="text-xl text-gray-900 font-semibold">{reservation.RoomNumber}</span>
                       </p>
+                    </div>
+
+                    <div className="bg-gray-200 h-[1%] w-full -mt-[30%]"></div>
+
+                    <div className="absolute left-4 mt-20 w-full pr-4">
+                      {/* Flex container com justify-between para alinhar as datas à direita */}
+                      <div className="flex flex-col space-y-2 pr-4">
+                        <div className="flex justify-between">
+                          <p className="text-sm font-bold">Check-In</p>
+                          <span>{reservation.DateCI}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <p className="text-sm font-bold">Check-Out</p>
+                          <span>{reservation.DateCO}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <p className="text-sm font-bold">Balance</p>
+                          <span>€{reservationtotal.Total}</span>
+                        </div>
+                      </div>
+                      {/* {botao} */}
+                      <div className="flex justify-center mt-5 pr-4">
+                        <button
+                          className="w-full pt-3 pb-3 text-sm rounded-lg border-2 flex items-center justify-center gap-2 border-[#2E615C] bg-[#BAE9E4] hover:bg-[#2E615C] hover:text-white transition-colors"
+                          onClick={() => handleCardClick(json)}
+                        >
+                          View Statement <GrView size={15} color="currentColor" /> {/* Usar currentColor */}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );

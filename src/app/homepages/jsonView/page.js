@@ -26,10 +26,24 @@ const JsonViewPage = () => {
     }
   }, []);
 
-  return (
-    <div className="p-4 font-sans">
-      <h1 className="text-2xl font-bold text-gray-800">Detalhes da Reserva</h1>
+  const updateSeenStatus = async () => {
+    const recordID = localStorage.getItem('recordID');
+    try {
+      await axios.patch(`/api/get_jsons/${recordID}`);
+      // Redireciona após a atualização do status
+      window.location.href = 'http://localhost:3000'; // Redireciona para o localhost
+    } catch (error) {
+      console.error('Erro ao marcar como visto:', error);
+    }
+  };
 
+  // Função para redirecionar para o localhost
+  const handleCancel = () => {
+    window.location.href = 'http://localhost:3000';
+  };
+
+  return (
+    <div className="p-20 font-sans">
       {loading ? (
         <p>Carregando dados...</p>
       ) : error ? (
@@ -38,71 +52,75 @@ const JsonViewPage = () => {
         <>
           <div className="flex gap-4 mb-4">
             {/* Seção de Reservas */}
-            <div className="flex-1 border border-gray-300 p-4 rounded-md shadow">
-              <h3 className="font-semibold text-lg">Reservas:</h3>
-              {JSON.parse(reservationData.requestBody).Reservation.map((reservation, index) => (
-                <div
-                  key={index}
-                  className="border border-gray-300 p-2 mb-2 rounded-md"
-                >
-                  <p><strong>Número da Reserva:</strong> {reservation.ReservationNumber}</p>
-                  <p><strong>Data de Check-In:</strong> {new Date(reservation.DateCI).toLocaleDateString()}</p>
-                  <p><strong>Data de Check-Out:</strong> {new Date(reservation.DateCO).toLocaleDateString()}</p>
-                  <p><strong>Número do Quarto:</strong> {reservation.RoomNumber}</p>
-                  <p><strong>Nome do Usuário:</strong> {reservation.UserName}</p>
+            <div className="flex-1 p-4">
+              <h2 className='font-bold text-3xl text-[#2E615C]'>Nome do Hotel</h2>
+              <p>Nome da rua do hotel</p>
+              <p>codigo postal e localidade da morada do hotel</p>
+
+              {JSON.parse(reservationData.requestBody).GuestInfo.map((guest, index) => (
+                <div key={index} className="mb-2 mt-10">
+                  <p>{guest.Salutation}. {guest.FirstName} {guest.LastName}</p>
+                  <p>{guest.Street}</p>
+                  <p>{guest.PostalCode}, {guest.City}, {guest.Country}</p>
+                  <p>NIF: {guest.VatNo}</p>
                 </div>
               ))}
-            </div>
 
-            {/* Seção de Informações do Hóspede */}
-            <div className="flex-1 border border-gray-300 p-4 rounded-md shadow">
-              <h3 className="font-semibold text-lg">Informações do Hóspede:</h3>
-              {JSON.parse(reservationData.requestBody).GuestInfo.map((guest, index) => (
-                <div
-                  key={index}
-                  className="border border-gray-300 p-2 mb-2 rounded-md"
-                >
-                  <p><strong>Nome:</strong> {guest.FirstName} {guest.LastName}</p>
-                  <p><strong>País:</strong> {guest.Country}</p>
-                  <p><strong>Cidade:</strong> {guest.City}</p>
+              <h4 className="mb-2 mt-10 font-bold text-[#2E615C]">RESERVATION DETAILS</h4>
+              {JSON.parse(reservationData.requestBody).Reservation.map((reservation, index) => (
+                <div key={index}>
+                  <p>Room Number: <span className='font-bold'>{reservation.RoomNumber}</span></p>
+                  <p>Reservation Number: <span className='font-bold'>{reservation.ReservationNumber}</span></p>
+                  <p>Check-In Date: <span className='font-bold'>{new Date(reservation.DateCI).toLocaleDateString()}</span></p>
+                  <p>Check-Out Date: <span className='font-bold'>{new Date(reservation.DateCO).toLocaleDateString()}</span></p>
                 </div>
               ))}
             </div>
           </div>
 
+          {/* Tabela de Itens */}
           <div className="mb-4">
-            <h3 className="font-semibold text-lg">Itens:</h3>
             <table className="min-w-full border-collapse border border-gray-300 mb-4">
               <thead>
-                <tr className="bg-gray-100">
-                  <th className="border border-gray-300 p-2">Descrição</th>
-                  <th className="border border-gray-300 p-2">Quantidade</th>
-                  <th className="border border-gray-300 p-2">Preço Unitário</th>
+                <tr className="text-white" style={{ backgroundColor: '#2E615C' }}>
+                  <th className="border border-gray-300 p-2">Date</th>
+                  <th className="border border-gray-300 p-2">Amount</th>
+                  <th className="border border-gray-300 p-2">Description</th>
+                  <th className="border border-gray-300 p-2">Unit Price</th>
                   <th className="border border-gray-300 p-2">Total</th>
                 </tr>
               </thead>
               <tbody>
-                {JSON.parse(reservationData.requestBody).Items.map((item) => (
-                  <tr key={item.ID}>
+                {JSON.parse(reservationData.requestBody).Items.map((item, index) => (
+                  <tr key={item.ID} style={{ backgroundColor: index % 2 === 0 ? '#ffffff' : '#D4F1EE' }}>
+                    <td className="border border-gray-300 p-2 text-center">{item.Date}</td>
+                    <td className="border border-gray-300 p-2 text-right w-20">{item.Qty}</td>
                     <td className="border border-gray-300 p-2">{item.Description}</td>
-                    <td className="border border-gray-300 p-2">{item.Qty}</td>
-                    <td className="border border-gray-300 p-2">€{item.UnitPrice.toFixed(2)}</td>
-                    <td className="border border-gray-300 p-2">€{item.Total.toFixed(2)}</td>
+                    <td className="border border-gray-300 p-2 text-right">€{item.UnitPrice.toFixed(2)}</td>
+                    <td className="border border-gray-300 p-2 text-right">€{item.Total.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
+              <tfoot>
+                <tr style={{ backgroundColor: '#2E615C' }}>
+                  <td colSpan={4} className="border border-gray-300 p-2 text-right text-white"><strong>Total:</strong></td>
+                  <td className="border border-gray-300 p-2 text-right text-white text-xl font-semibold">
+                    €{JSON.parse(reservationData.requestBody).Items.reduce((acc, item) => acc + item.Total, 0).toFixed(2)}
+                  </td>
+                </tr>
+              </tfoot>
             </table>
           </div>
 
-          <div className="mb-4">
-            <h3 className="font-semibold text-lg">Impostos:</h3>
-            <table className="min-w-full border-collapse border border-gray-300 mb-4">
+          {/* Tabela de Impostos */}
+          <div className="mb-4 mt-20">
+            <table className="min-w-full border-collapse border border-gray-300 mb-4 text-xs">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border border-gray-300 p-2">Tipo de Imposto</th>
-                  <th className="border border-gray-300 p-2">Total com Impostos</th>
-                  <th className="border border-gray-300 p-2">Total sem Impostos</th>
-                  <th className="border border-gray-300 p-2">Total de Impostos</th>
+                  <th className="border border-gray-300 p-2">Type of Tax</th>
+                  <th className="border border-gray-300 p-2">Total with Taxes</th>
+                  <th className="border border-gray-300 p-2">Total without Taxes</th>
+                  <th className="border border-gray-300 p-2">Total Taxes</th>
                 </tr>
               </thead>
               <tbody>
@@ -118,15 +136,18 @@ const JsonViewPage = () => {
             </table>
           </div>
 
-          <div className="border border-gray-300 p-4 rounded-md">
-            <h3 className="font-semibold text-lg">Totais do Documento:</h3>
-            {JSON.parse(reservationData.requestBody).DocumentTotals.map((total, index) => (
-              <div key={index}>
-                <p><strong>Total:</strong> €{total.Total.toFixed(2)}</p>
-                <p><strong>Saldo:</strong> €{total.Balance.toFixed(2)}</p>
-                <p><strong>Pagamento:</strong> €{total.Payment.toFixed(2)}</p>
-              </div>
-            ))}
+          {/* Botões de Ação */}
+          <div className='flex gap-4 justify-end mt-4 p-4'>
+            <button 
+              className='bg-gray-300 font-semibold p-2 rounded-lg' 
+              onClick={handleCancel}>
+              Cancel
+            </button>
+            <button 
+              className='bg-[#2E615C] text-white font-semibold p-2 rounded-lg' 
+              onClick={updateSeenStatus}>
+              Ok
+            </button>
           </div>
         </>
       ) : (
