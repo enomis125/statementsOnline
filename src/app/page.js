@@ -1,12 +1,28 @@
-'use client';
+"use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { GrView } from "react-icons/gr";
 import { FiLogOut } from "react-icons/fi";
+import { signOut } from "next-auth/react";
+import nextSession from "next-session";
 
 const Page = () => {
   const [getJsons, setGetJsons] = useState([]); // Estado para armazenar os dados da API
-  const [filter, setFilter] = useState('pendentes'); // Estado para gerenciar o filtro
+  const [filter, setFilter] = useState("pendentes"); // Estado para gerenciar o filtro
+  const [propertyID, setPropertyID] = useState("");
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const response = await axios.get("/api/get_user_name"); // Fetch user name from API
+        setPropertyID(response.data.propertyID); // Salva o entityID do usuário
+      } catch (error) {
+        console.error("Error fetching user name:", error);
+      }
+    };
+
+    fetchUserName();
+  }, []);
 
   // Função para buscar os dados da API
   const getDataJsons = async () => {
@@ -15,6 +31,19 @@ const Page = () => {
       setGetJsons(response.data.response); // Aqui você salva os dados da API
     } catch (error) {
       console.error("Erro ao buscar os dados da API", error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const response = await axios.post("/api/logout"); // Faz uma requisição para a rota de logout
+
+      if (response.status === 200) {
+        // Se o logout for bem-sucedido, redireciona para a página de login ou home
+        window.location.href = "/login"; // Redireciona para a página de login
+      }
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error);
     }
   };
 
@@ -29,17 +58,18 @@ const Page = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Filtra os dados com base no filtro selecionado
-  const filteredJsons = getJsons.filter(json =>
-    filter === 'vistos' ? json.seen : !json.seen
+  // Filtra os dados com base no filtro selecionado e no entityID do usuário
+  const filteredJsons = getJsons.filter(
+    (json) =>
+      json.propertyID === propertyID &&
+      (filter === "vistos" ? json.seen : !json.seen)
   );
 
   // Função para marcar como "seen" e abrir a nova página
   const handleCardClick = (json) => {
-    localStorage.setItem('recordID', json.requestID);
-    window.location.href = '/homepages/jsonView';
+    localStorage.setItem("recordID", json.requestID);
+    window.location.href = "/homepages/jsonView";
   };
-  
 
   return (
     <div className="min-h-screen flex w-full">
@@ -49,36 +79,45 @@ const Page = () => {
         </div>
 
         {/* Botão de Logout na parte inferior */}
-        <button className="flex items-center gap-2 text-lg mb-4 pl-8">
+        <button
+          className="flex items-center gap-2 text-lg mb-4 pl-8"
+          onClick={handleLogout}
+        >
           <FiLogOut size={20} color="gray-900" /> Logout
         </button>
       </div>
 
       {/* Conteúdo principal com os registros de reservas */}
-      <div className="flex-1 min-h-screen ml-[16%] p-8 overflow-y-auto" style={{ backgroundColor: '#F0F1EC' }}>
-
+      <div
+        className="flex-1 min-h-screen ml-[16%] p-8 overflow-y-auto"
+        style={{ backgroundColor: "#F0F1EC" }}
+      >
         <h2 className="font-semibold text-2xl mb-4">Statements</h2>
 
         <button
-          className={`mb-4 p-2 text-left font-bold rounded-lg ${filter === 'pendentes' ? 'text-white' : 'bg-white border'}`}
+          className={`mb-4 p-2 text-left font-bold rounded-lg ${
+            filter === "pendentes" ? "text-white" : "bg-white border"
+          }`}
           style={{
-            backgroundColor: filter === 'pendentes' ? '#2E615C' : '',
-            borderColor: filter !== 'pendentes' ? 'lightgray' : '', // Aplica a borda ao botão não pressionado
-            borderWidth: filter !== 'pendentes' ? '2px' : '0px' // Ajusta a espessura da borda
+            backgroundColor: filter === "pendentes" ? "#2E615C" : "",
+            borderColor: filter !== "pendentes" ? "lightgray" : "", // Aplica a borda ao botão não pressionado
+            borderWidth: filter !== "pendentes" ? "2px" : "0px", // Ajusta a espessura da borda
           }}
-          onClick={() => setFilter('pendentes')}
+          onClick={() => setFilter("pendentes")}
         >
           Pendentes
         </button>
 
         <button
-          className={`mb-4 ml-4 p-2 text-left font-bold rounded-lg ${filter === 'vistos' ? 'text-white' : 'bg-white border'}`}
+          className={`mb-4 ml-4 p-2 text-left font-bold rounded-lg ${
+            filter === "vistos" ? "text-white" : "bg-white border"
+          }`}
           style={{
-            backgroundColor: filter === 'vistos' ? '#2E615C' : '',
-            borderColor: filter !== 'vistos' ? 'lightgray' : '',
-            borderWidth: filter !== 'vistos' ? '2px' : '0px'
+            backgroundColor: filter === "vistos" ? "#2E615C" : "",
+            borderColor: filter !== "vistos" ? "lightgray" : "",
+            borderWidth: filter !== "vistos" ? "2px" : "0px",
           }}
-          onClick={() => setFilter('vistos')}
+          onClick={() => setFilter("vistos")}
         >
           Vistos
         </button>
@@ -87,10 +126,14 @@ const Page = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredJsons.length > 0 ? (
             filteredJsons
-              .sort((a, b) => new Date(b.requestDateTime) - new Date(a.requestDateTime)) // Ordena do mais recente para o mais antigo
+              .sort(
+                (a, b) =>
+                  new Date(b.requestDateTime) - new Date(a.requestDateTime)
+              ) // Ordena do mais recente para o mais antigo
               .map((json, index) => {
                 const reservation = JSON.parse(json.requestBody).Reservation[0]; // Pega a primeira reserva de cada `requestBody`
-                const reservationtotal = JSON.parse(json.requestBody).DocumentTotals[0]; // Pega a primeira reserva de cada `requestBody`
+                const reservationtotal = JSON.parse(json.requestBody)
+                  .DocumentTotals[0]; // Pega a primeira reserva de cada `requestBody`
 
                 return (
                   <div
@@ -99,14 +142,22 @@ const Page = () => {
                   >
                     {/* Nome do hotel no canto superior esquerdo */}
                     <div className="absolute top-0 left-0 bg-green-200 p-2 rounded-lg mt-2 ml-2">
-                      <p className="text-sm font-bold text-gray-700">Nome do Hotel</p>
+                      <p className="text-sm font-bold text-gray-700">
+                        Nome do Hotel
+                      </p>
                     </div>
 
                     {/* Conteúdo do card */}
                     <div className="flex flex-col absolute top-14 left-4">
                       <p className="text-sm text-gray-500">
-                        Reservation <span className="text-xl text-gray-900 font-semibold">{reservation.ReservationNumber}</span> / Room{" "}
-                        <span className="text-xl text-gray-900 font-semibold">{reservation.RoomNumber}</span>
+                        Reservation{" "}
+                        <span className="text-xl text-gray-900 font-semibold">
+                          {reservation.ReservationNumber}
+                        </span>{" "}
+                        / Room{" "}
+                        <span className="text-xl text-gray-900 font-semibold">
+                          {reservation.RoomNumber}
+                        </span>
                       </p>
                     </div>
 
@@ -134,7 +185,9 @@ const Page = () => {
                           className="w-full pt-3 pb-3 text-sm rounded-lg border-2 flex items-center justify-center gap-2 border-[#2E615C] bg-[#BAE9E4] hover:bg-[#2E615C] hover:text-white transition-colors"
                           onClick={() => handleCardClick(json)}
                         >
-                          View Statement <GrView size={15} color="currentColor" /> {/* Usar currentColor */}
+                          View Statement{" "}
+                          <GrView size={15} color="currentColor" />{" "}
+                          {/* Usar currentColor */}
                         </button>
                       </div>
                     </div>
