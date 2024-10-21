@@ -1,9 +1,6 @@
 # Use an official Node.js runtime as a base image
 FROM node:18-alpine
 
-# Install required packages
-RUN apk add --no-cache --virtual .build-deps gcc g++ make python3 libtool libodbc
-
 # Set the working directory in the container
 WORKDIR /app
 
