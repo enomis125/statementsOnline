@@ -9,10 +9,19 @@ const Page = () => {
   useEffect(() => {
     const fetchUserName = async () => {
       try {
-        const response = await axios.get("/api/get_user_name");
-        setPropertyID(response.data.propertyID);
+        const response = await axios.get("/api/get_user_name"); // Fetch user name from API
+        const userPropertyID = response.data.propertyID;
+
+        if (!userPropertyID) {
+          // If no propertyID is found, redirect to login
+          window.location.href = "/login";
+        } else {
+          setPropertyID(userPropertyID); // Save the entityID
+        }
       } catch (error) {
         console.error("Error fetching user name:", error);
+        // On error, also redirect to login
+        window.location.href = "/login";
       }
     };
 
@@ -48,9 +57,7 @@ const Page = () => {
         className="flex-1 min-h-screen p-8 overflow-y-auto"
         style={{ backgroundColor: "#EBEBEB" }}
       >
-        <h2 className="font-semibold text-2xl mb-4">
-          Statements
-        </h2>
+        <h2 className="font-semibold text-2xl mb-4">Statements</h2>
 
         <div>
           <p>dashboard de pendentes e vistos</p>
