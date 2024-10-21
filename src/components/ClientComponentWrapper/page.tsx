@@ -7,7 +7,7 @@ import { useState } from "react";
 
 export default function ClientWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const showSidebar = !pathname.includes("/homepages/jsonView") && !pathname.includes("/login");
+  const showSidebar = pathname && !pathname.includes("/homepages/jsonView") && !pathname.includes("/login");
   const [expanded, setExpanded] = useState(true);
 
   return (
