@@ -1,6 +1,5 @@
 //app/api/get_jsons/[id]/route.js
-import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
+import { NextResponse } from "next/server";
 import prisma from '@/app/lib/prisma';
 
 export async function GET(request, context) {
@@ -35,6 +34,7 @@ export async function PATCH(request, context) {
                 seen: true
             }
         })
+        console.log("resposta", response);
         return new NextResponse(JSON.stringify({ status: 200 }));
 
     } catch (error) {
