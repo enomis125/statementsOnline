@@ -1,10 +1,9 @@
 
-import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
+import { NextResponse } from "next/server";
 import prisma from '@/app/lib/prisma';
 
 
-export async function GET(request) {
+export async function GET() {
 
     const response = await prisma.requestRecords.findMany()
 

@@ -39,6 +39,7 @@ export default async function handler(req, res) {
       });
 
       console.log("Data saved to DB:", newRequest);
+      console.log("Dados para conseguir compilar: ", PropertyID, Items, Taxes, DocumentTotals, reservation, guestInfo);
 
       // Prepare a resposta a ser enviada
       const responseBody = {
