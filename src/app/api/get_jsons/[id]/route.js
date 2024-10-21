@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import prisma from '@/app/lib/prisma';
 
-export async function GET( context) {
+export async function GET(context) {
 
     const { id } = context.params;
 
@@ -21,7 +21,7 @@ export async function GET( context) {
     return new NextResponse(JSON.stringify({ response, status: 200 }));
 }
 
-export async function PATCH( context) {
+export async function PATCH(context) {
 
     try {
         const { id } = context.params;
