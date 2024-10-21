@@ -2,10 +2,11 @@ import nextSession from "next-session";
 
 const sessionOptions = {
   name: "session",
-  secret: "your_super_secret_key", // Troque por uma chave secreta forte
+  secret: "your_super_secret_key",
   cookie: {
-    secure: process.env.NODE_ENV === "production", // Usa cookies seguros em produção
-    maxAge: 24 * 60 * 60 * 1000, // 1 dia
+    secure: process.env.NODE_ENV === "production", // secure in production
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+    path: "/", // make the cookie available site-wide
   },
 };
 

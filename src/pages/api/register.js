@@ -15,8 +15,9 @@ export default async function handler(req, res) {
     }
 
     try {
-      const { firstName, secondName, email, password } = req.body;
+      const { firstName, secondName, email, password, propertyIds } = req.body;
 
+      // Validar os campos obrigatórios
       if (!firstName || !secondName || !email || !password) {
         return res.status(400).json({ message: "All fields are required." });
       }
@@ -33,17 +34,41 @@ export default async function handler(req, res) {
       // Criptografando a senha
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Criando o usuário
-      await prisma.users.create({
+      // Verificando se os IDs das propriedades existem
+      const properties = await prisma.properties.findMany({
+        where: {
+          propertyID: { in: propertyIds }, // Verifica se os propertyIds estão no banco de dados
+        },
+      });
+
+      if (properties.length !== propertyIds.length) {
+        return res
+          .status(400)
+          .json({ message: "Some property IDs are invalid or do not exist." });
+      }
+
+      // Criando o usuário e associando as propriedades existentes
+      const user = await prisma.users.create({
         data: {
           firstName: firstName,
           secondName: secondName,
           email: email,
           password: hashedPassword,
+          properties: {
+            create: propertyIds.map((propertyID) => ({
+              propertyID,
+            })),
+          },
+        },
+        include: {
+          properties: true, // Incluir as propriedades na resposta
         },
       });
 
-      return res.status(201).json({ message: "User registered successfully." });
+      return res.status(201).json({
+        message: "User and properties associated successfully.",
+        user,
+      });
     } catch (error) {
       console.error("Database error:", error);
       return res
