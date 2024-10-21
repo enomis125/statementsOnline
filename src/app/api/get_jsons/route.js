@@ -1,14 +1,15 @@
-
-import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
+import { NextResponse } from "next/server"; // Removendo NextRequest pois não está em uso
 import prisma from '@/app/lib/prisma';
 
-
-export async function GET(request) {
-
-    const response = await prisma.requestRecords.findMany()
-
-    prisma.$disconnect()
-
-    return new NextResponse(JSON.stringify({ response, status: 200 }));
+export async function GET() {
+    try {
+        const response = await prisma.requestRecords.findMany();
+        
+        return new NextResponse(JSON.stringify({ response }), { status: 200 });
+    } catch (error) {
+        console.error('Erro ao buscar registros:', error);
+        return new NextResponse(JSON.stringify({ error: 'Failed to fetch records' }), { status: 500 });
+    } finally {
+        await prisma.$disconnect(); // Desconexão do Prisma
+    }
 }
