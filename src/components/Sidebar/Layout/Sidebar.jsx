@@ -105,18 +105,19 @@ export function SidebarItem({ icon, text, active, alert, children }) {
 }
 
 // Inside SubMenuItem component
-export function SubMenuItem({ text, filter, setFilter }) {
+export function SubMenuItem({ text, filter }) {
   const { expanded } = useContext(SidebarContext);
 
   return (
-    <li
-      className={`flex items-center py-2 pl-3 my-1 rounded-md hover:bg-indigo-50 text-gray-600 cursor-pointer`}
-      onClick={() => setFilter(filter)} // Define o filtro sem mudar a URL
-    >
-      <span className={`overflow-hidden transition-all ${expanded ? "w-40" : "w-0"}`}>
-        {text}
-      </span>
-    </li>
+    <Link href={`/homepages/filtros/${filter}`}>
+      <li
+        className={`flex items-center py-2 pl-3 my-1 rounded-md hover:bg-indigo-50 text-gray-600 cursor-pointer`}
+      >
+        <span className={`overflow-hidden transition-all ${expanded ? "w-40" : "w-0"}`}>
+          {text}
+        </span>
+      </li>
+    </Link>
   );
 }
 
