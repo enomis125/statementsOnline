@@ -8,12 +8,13 @@ datasource db {
 }
 
 model properties {
-  propertyID               Int     @id @default(autoincrement())
-  propertyTag              String  @db.VarChar(100)
-  propertyName             String  @db.VarChar(100)
-  propertyServer           String  @db.VarChar(2048)
+  propertyID               Int               @id @default(autoincrement())
+  propertyTag              String            @db.VarChar(100)
+  propertyName             String            @db.VarChar(100)
+  propertyServer           String            @db.VarChar(2048)
   propertyPort             Int?
-  propertyConnectionString String? @db.VarChar(2048)
+  propertyConnectionString String?           @db.VarChar(2048)
+  usersProperties          usersProperties[]
 }
 
 model requestRecords {
@@ -28,11 +29,22 @@ model requestRecords {
 }
 
 model users {
-  userID     Int       @id @default(autoincrement())
-  firstName  String    @db.VarChar(50)
-  secondName String    @db.VarChar(50)
-  email      String    @unique(map: "email") @db.VarChar(100)
-  password   String    @db.VarChar(255)
-  propertyID Int?
-  createdAt  DateTime? @default(now()) @db.Timestamp(0)
+  userID          Int               @id @default(autoincrement())
+  firstName       String            @db.VarChar(50)
+  secondName      String            @db.VarChar(50)
+  email           String            @unique(map: "email") @db.VarChar(100)
+  password        String            @db.VarChar(255)
+  createdAt       DateTime?         @default(now()) @db.Timestamp(0)
+  propertyID      Int?
+  usersProperties usersProperties[]
+}
+
+model usersProperties {
+  userID     Int
+  propertyID Int
+  properties properties @relation(fields: [propertyID], references: [propertyID], onDelete: Cascade)
+  users      users      @relation(fields: [userID], references: [userID], onDelete: Cascade)
+
+  @@id([userID, propertyID])
+  @@index([propertyID], map: "usersProperties_propertyID_fkey")
 }
