@@ -38,7 +38,7 @@ export default function Sidebar({ children, setExpanded }) {
         </SidebarContext.Provider>
 
         <div className="border-t flex p-3">
-          <Image
+          <img
             src="https://ui-avatars.com/api/?background=c7d2fe&color=3730a3&bold=true"
             alt=""
             className="w-10 h-10 rounded-md"
