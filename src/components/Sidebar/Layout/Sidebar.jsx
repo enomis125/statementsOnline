@@ -3,7 +3,7 @@
 import { useContext, createContext, useState } from "react";
 import { TbLayoutSidebarLeftExpand } from "react-icons/tb";
 import Link from 'next/link'; // Importando o Link do Next.js
-import Image from 'next/image';
+
 
 const SidebarContext = createContext();
 
