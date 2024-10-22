@@ -96,8 +96,12 @@ const JsonViewPage = () => {
         <p className="text-red-500">{error}</p>
       ) : reservationData ? (
         <>
-          <div className="mb-4">
-            <p className="flex justify-center">logotipo</p>
+          <div className="mb-4 w-screen">
+            <img
+              src={`/logos/${propertyID}.png`}
+              alt="Property Image"
+              className="mx-auto"
+            />
           </div>
 
           <div className="flex flex-col justify-center items-center w-[80%] mx-auto mt-4">
