@@ -7,18 +7,22 @@ import { useState } from "react";
 
 export default function ClientWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const showSidebar = !pathname.includes("/homepages/jsonView") && !pathname.includes("/login");
+  const showSidebar = pathname && !pathname.includes("/homepages/jsonView") && !pathname.includes("/login");
   const [expanded, setExpanded] = useState(true);
 
   return (
     <div className="min-h-screen flex">
       {showSidebar && (
         <Sidebar setExpanded={setExpanded}>
-          <SidebarItem text="Statements" icon={<IoIosStats size={20} />} active>
+          <SidebarItem text="Statements" icon={<IoIosStats size={20} />} active alert={false}>
+            {/* Aqui você aninha os SubMenuItems dentro de SidebarItem */}
             <SubMenuItem text="Pendentes" filter="pendentes" />
             <SubMenuItem text="Vistos" filter="vistos" />
           </SidebarItem>
-          <SidebarItem text="View" icon={<IoIosStats size={20} />} />
+          <SidebarItem text="View" icon={<IoIosStats size={20} />} active alert={false}>
+            {/* Aqui você pode adicionar SubMenuItems se necessário */}
+            <SubMenuItem text="Partidas" filter="partidas" />
+          </SidebarItem>
         </Sidebar>
       )}
 

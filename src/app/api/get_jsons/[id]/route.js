@@ -1,29 +1,29 @@
-//app/api/get_jsons/[id]/route.js
-import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
+import { NextResponse } from "next/server";
 import prisma from '@/app/lib/prisma';
 
 export async function GET(request, context) {
-
     const { id } = context.params;
 
-    const response = await prisma.requestRecords.findMany({
-        where: {
-            requestID: parseInt(id)
+    try {
+        const response = await prisma.requestRecords.findMany({
+            where: {
+                requestID: parseInt(id),
+            },
+        });
+
+        // Verifique se a resposta está vazia
+        if (response.length === 0) {
+            return new NextResponse(JSON.stringify({ error: 'Not found' }), { status: 404 });
         }
-    })
 
-    if (!response) {
-        return new NextResponse(JSON.stringify({ status: 404 }));
+        return new NextResponse(JSON.stringify({ response }), { status: 200 });
+    } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+        return new NextResponse(JSON.stringify({ error: error.message }), { status: 500 });
     }
-
-    prisma.$disconnect()
-
-    return new NextResponse(JSON.stringify({ response, status: 200 }));
 }
 
 export async function PATCH(request, context) {
-
     try {
         const { id } = context.params;
 
@@ -32,15 +32,13 @@ export async function PATCH(request, context) {
                 requestID: parseInt(id),
             },
             data: {
-                seen: true
-            }
-        })
-        return new NextResponse(JSON.stringify({ status: 200 }));
+                seen: true,            
+            },
+        });
 
+        return new NextResponse(JSON.stringify({ response }), { status: 200 });
     } catch (error) {
+        console.error('Erro ao atualizar dados:', error);
         return new NextResponse(JSON.stringify({ error: error.message }), { status: 500 });
-    } finally {
-        await prisma.$disconnect();
     }
-
 }

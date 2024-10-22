@@ -1,4 +1,4 @@
-import { getSession } from "next-session";
+// import { getSession } from "next-session";
 import session from "../../app/lib/session"; // Importa a configuração da sessão
 
 export default async function handler(req, res) {

@@ -4,6 +4,7 @@ import { useContext, createContext, useState } from "react";
 import { TbLayoutSidebarLeftExpand } from "react-icons/tb";
 import Link from 'next/link'; // Importando o Link do Next.js
 
+
 const SidebarContext = createContext();
 
 export default function Sidebar({ children, setExpanded }) {
