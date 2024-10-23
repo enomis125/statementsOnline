@@ -1,9 +1,7 @@
 "use client";
-import React, {useState, useEffect} from "react";
+import React, {useEffect} from "react";
 
 const Page = () => {
-  const [getJsons, setGetJsons] = useState([]);
-  const [propertyID, setPropertyID] = useState("");
 
   useEffect(() => {
     const fetchUserName = async () => {
