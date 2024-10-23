@@ -42,14 +42,6 @@ const Page = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Filtragem baseada no tipo de página
-  const isPendentesPage = true; // Defina isso com base no nome da sua página
-  const filteredJsons = getJsons.filter(
-    (json) =>
-      json.propertyID === propertyID &&
-      (isPendentesPage ? !json.seen : json.seen) // Lógica de filtragem
-  );
-
   return (
     <div className="min-h-screen flex">
       <main
