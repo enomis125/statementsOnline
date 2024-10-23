@@ -10,7 +10,7 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const res = await fetch("/api/login", {
+    const res = await fetch("/api/login/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -30,30 +30,80 @@ export default function LoginPage() {
   };
 
   return (
-    <div>
-      <h1>Login</h1>
-      <form onSubmit={handleSubmit}>
+    <div className="flex min-h-screen">
+      {/* Metade esquerda (Conteúdo de login) */}
+      <div className="w-full md:w-1/2 p-8 flex items-center justify-center -mt-[10%]"> {/* Centraliza horizontal e verticalmente */}
+        <div className="flex flex-col items-start w-full md:w-80"> {/* Mantém o texto alinhado à esquerda */}
+          <p className="mb-[5%]">
+            <span className="text-2xl font-semibold text-[#BF6415]">Extensions</span> myPMS | <span className="font-semibold">Login</span>
+          </p>
+          <p className="text-sm">
+            Para entrar no Extensions myPMS, introduza o<br /> seu E-mail de utilizador e código de acesso.
+          </p>
+          <form onSubmit={handleSubmit} className="w-full"> {/* Defini a largura do formulário */}
+            <div className="flex flex-col gap-4 mt-10 mb-5">
+              <div>
+                <input
+                  placeholder="Email de Utilizador"
+                  className="h-10 w-full border border-gray-300 border-b-2 border-b-[#13678A] rounded-sm outline-none p-2 text-sm"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <input
+                  placeholder="Código de Acesso"
+                  className="h-10 w-full border border-gray-300 border-b-2 border-b-[#13678A] rounded-sm outline-none p-2 text-sm"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+            <button type="submit" className="w-full border border-gray-300 rounded-2xl h-10 text-sm text-gray-500">Entrar</button>
+            {error && <p style={{ color: "red" }}>{error}</p>}
+            <div className="mt-10 flex flex-col gap-4 text-sm text-gray-400">
+              <p>Esqueceu-se do E-mail de utilizador ou do código de<br /> acesso?</p>
+              <p>Já sou cliente mas não tenho acesso.<br /> Como aderir ao Extensions myPMS?</p>
+            </div>
+          </form>
+        </div>
+        {/* Imagem e Informações de Helpdesk no fundo */}
+      <div className="bg-gray-100 h-40 w-full md:w-[50%] fixed bottom-0 left-0 flex flex-row gap-5 items-center z-10">
         <div>
-          <label>Email:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+          <img
+            src="login/logo_Hits.png"
+            width={180}
+            className="ml-6"
           />
         </div>
-        <div>
-          <label>Password:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+        <div className="flex flex-col gap-4 text-sm text-gray-600">
+          <p>
+            Helpdesk Extensions myPMS<br />
+            <span className="font-semibold text-black">+351 253 60 30 32</span><br />
+            (Custo de chamada para a rede fixa nacional)
+          </p>
+          <p>
+            Atendimento personalizado<br />
+            Dias úteis, das 9h30 às 18h30.<br />
+            suporte@hitsnorte.pt
+          </p>
         </div>
-        <button type="submit">Login</button>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-      </form>
+      </div>
+      </div>
+  
+      {/* Metade direita (Imagem) */}
+      <div className="w-full md:w-1/2 p-0 relative flex items-center justify-end h-screen">
+        <img
+          src="login/cover.jpg"
+          alt="Imagem na metade direita"
+          className="w-full h-full object-cover"
+        />
+      </div>
     </div>
   );
+
 }
